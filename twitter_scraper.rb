@@ -30,8 +30,8 @@ class Fixnum
 	end
 end
 
-module TwitterScraper
-	class Exception < ::Exception
+module Athena
+	class Exception < ::StandardError
 	end
 	
 	class Tweet
@@ -65,36 +65,36 @@ module TwitterScraper
 		def self.parse_status_div(d)
 			############# A normal tweet
 			#<li class="hentry u-TALlama status" id="status_4993369766">
-			#  <span class="status-body">
-			#    <span class="entry-content">The Superfreakonomics guys are really, 
-			#      really wrong about global warming, and here's why: 
-			#      <a href="http://bit.ly/1M05fo" class="tweet-url web" rel="nofollow" target="_blank">http://bit.ly/1M05fo</a>
-			#    </span>
-			#    <span class="meta entry-meta">
-			#      <a href="http://twitter.com/TALlama/status/4993369766" class="entry-date" rel="bookmark">
-			#        <span data="{time:'Mon Oct 19 15:30:29 +0000 2009'}" 
-			#          class="published timestamp">8:30 AM Oct 19th</span>
-			#      </a>
-			#      <span>from <a href="http://bit.ly" rel="nofollow">bit.ly</a></span>
-			#    </span>
-			#  </span>
+			#	 <span class="status-body">
+			#		 <span class="entry-content">The Superfreakonomics guys are really, 
+			#			 really wrong about global warming, and here's why: 
+			#			 <a href="http://bit.ly/1M05fo" class="tweet-url web" rel="nofollow" target="_blank">http://bit.ly/1M05fo</a>
+			#		 </span>
+			#		 <span class="meta entry-meta">
+			#			 <a href="http://twitter.com/TALlama/status/4993369766" class="entry-date" rel="bookmark">
+			#				 <span data="{time:'Mon Oct 19 15:30:29 +0000 2009'}" 
+			#					 class="published timestamp">8:30 AM Oct 19th</span>
+			#			 </a>
+			#			 <span>from <a href="http://bit.ly" rel="nofollow">bit.ly</a></span>
+			#		 </span>
+			#	 </span>
 			#</li>
 			
 			############## A reply
 			#<li class="hentry u-TALlama status" id="status_5034174917">
-			#  <span class="status-body">
-			#    <span class="entry-content">@<a class="tweet-url username" href="/lemmo">lemmo</a> 
-			#      that was awesome.
-			#    </span>
-			#    <span class="meta entry-meta">
-			#      <a href="http://twitter.com/TALlama/status/5034174917" class="entry-date" rel="bookmark">
-			#        <span class="published timestamp" data="{time:'Wed Oct 21 02:18:54 +0000 2009'}"
-			#          >7:18 PM Oct 20th</span>
-			#      </a>
-			#      <span>from <a href="http://twitterrific.com" rel="nofollow">Twitterrific</a></span>
-			#      <a href="http://twitter.com/lemmo/status/5034093400">in reply to lemmo</a>
-			#    </span>
-			#  </span>
+			#	 <span class="status-body">
+			#		 <span class="entry-content">@<a class="tweet-url username" href="/lemmo">lemmo</a> 
+			#			 that was awesome.
+			#		 </span>
+			#		 <span class="meta entry-meta">
+			#			 <a href="http://twitter.com/TALlama/status/5034174917" class="entry-date" rel="bookmark">
+			#				 <span class="published timestamp" data="{time:'Wed Oct 21 02:18:54 +0000 2009'}"
+			#					 >7:18 PM Oct 20th</span>
+			#			 </a>
+			#			 <span>from <a href="http://twitterrific.com" rel="nofollow">Twitterrific</a></span>
+			#			 <a href="http://twitter.com/lemmo/status/5034093400">in reply to lemmo</a>
+			#		 </span>
+			#	 </span>
 			#</li>
 			
 			t = Tweet.new
@@ -153,9 +153,9 @@ module TwitterScraper
 			File.open(tmp_file, "w+") do |f|
 				f.puts %{<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">}
 				f.puts %{<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">}
-				f.puts %{	<head><title>#{options[:title] || "Twitter Archive"}</title>}
+				f.puts %{ <head><title>#{options[:title] || "Twitter Archive"}</title>}
 				f.puts %{		<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />}
-				f.puts %{
+				f.puts %[
 					<style type='text/css'>
 						#timeline {
 							margin: 0 0 0 5em;
@@ -214,7 +214,7 @@ module TwitterScraper
 							color: #999; 
 							font-size: 80%; 
 						}
-					</style>}
+					</style>]
 				f.puts "	</head>"
 				f.puts "	<body>"
 				f.puts TweetStats.new(tweets, options).to_html unless options[:no_stats]
@@ -363,7 +363,7 @@ module TwitterScraper
 			
 			ordered_counts = ordered_counts.slice(0, options[:max]) if options[:max]
 			
-			html << "	<div><h3>#{name} #{aggregate_stats_html unless options[:aggregate_stats] == false}</h3>"
+			html << " <div><h3>#{name} #{aggregate_stats_html unless options[:aggregate_stats] == false}</h3>"
 			html << '		<ol>'
 			ordered_counts.each do |record| 
 				section = raw_section = record.last
@@ -379,7 +379,7 @@ module TwitterScraper
 				end
 				html << "			<li>#{section_html}</li>"
 			end
-			html << '		</ol>' << '	</div>'
+			html << '		</ol>' << ' </div>'
 			
 			return html
 		end
@@ -486,16 +486,18 @@ module TwitterScraper
 			@url ||= URI.parse("http://twitter.com/#{user.name}?page=#{index}")
 		end
 		
-		def get
+		def get(options={})
+			out = options[:out] || STDOUT
+			
 			return @page_contents if @page_contents
 			
 			if File.exists? index_cache_file
-				puts "    (pulling from cache at #{index_cache_file})"
+				out.puts "		(pulling from cache at #{index_cache_file})"
 				self.from_cache = true
 				return @page_contents = File.read(index_cache_file)
 			elsif VERBOSE
-				puts "    downloading #{url}"
-				puts "    saving to #{index_cache_file}"
+				out.puts "		downloading #{url}"
+				out.puts "		saving to #{index_cache_file}"
 			end
 			
 			@page_contents = ""
@@ -503,12 +505,12 @@ module TwitterScraper
 			res = Net::HTTP.start(url.host, url.port) {|http|
 				http.get(url.path + "?page=#{index}")
 			}
-				
+			
 			if res.is_a? Net::HTTPSuccess
 				@page_contents = res.body
 				File.open(index_cache_file, "w+") { |io| io << @page_contents }
 			else
-				throw Exception.new("Error getting page #{index}: #{res.message} [#{res.code}]")
+				raise Exception, "Error getting page #{index}: #{res.message} [#{res.code}]"
 			end
 
 			@page_contents
@@ -538,22 +540,6 @@ module TwitterScraper
 			@cache_dir
 		end
 		
-		def rss_feed_url
-			return @rss_feed_url if @rss_feed_url
-			
-			res = Net::HTTP.start(url.host, url.port) {|http|
-				http.get(url.path)
-			}
-			
-			if res.is_a? Net::HTTPSuccess
-				doc = Hpricot(res.body)
-				rss_link = doc.at('//link[@type="application/rss+xml"]')
-				@rss_feed_url = rss_link['href']
-			else
-				throw Exception.new("Error discovering rss feed: #{res.message} [#{res.code}]")
-			end
-		end
-		
 		def get_tweets_from_web(options = {})
 			page_range = options[:page_range]
 			out = options[:out] || STDOUT
@@ -566,12 +552,13 @@ module TwitterScraper
 			out.puts "Getting #{page_range_desc} of #{name}'s tweets…"
 			
 			loop do
-				out.puts "  Getting page #{page_index}"
+				out.puts "	Getting page #{page_index}"
 				page = TimelinePage.new(self, page_index)
 				
 				begin
+					page.get(options)
 					add_tweets(page.tweets) or return
-					out.puts "    got #{page.tweets.size} tweets"
+					out.puts "		got #{page.tweets.size} tweets"
 					page_index = page_index.succ
 					
 					break if page.tweets.empty?
@@ -600,11 +587,11 @@ module TwitterScraper
 			out.puts "Pulling from archive"
 			if File.exists?(archive_file)
 				tweets = Tweet.parse_all_from_page(File.read(archive_file))
-				out.puts "  Got #{tweets.length} tweets from archive"
+				out.puts "	Got #{tweets.length} tweets from archive"
 				
 				add_tweets(tweets)
 			else
-				out.puts "  No archive to pull from"
+				out.puts "	No archive to pull from"
 			end
 		end
 		
@@ -647,7 +634,7 @@ end
 
 if $0 == __FILE__
 	username=$1 || 'TALlama'
-	user = TwitterScraper::User.new(username)
+	user = Athena::User.new(username)
 	file = user.archive_tweets(
 		#:group_by => Proc.new {|tweet| tweet.timestamp.strftime('%x')},
 		#:group_by => Proc.new {|tweet| tweet.content.length},
