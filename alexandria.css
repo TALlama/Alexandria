@@ -1,0 +1,105 @@
+body {
+	margin-left: 5em;
+	margin-right: 15em;
+}
+
+.tweets-in-month > h4 {
+	margin: 0;
+	margin-top: 1em;
+	-webkit-transform-origin: bottom left;
+	-webkit-transition: 1s;
+}
+
+.tweets-in-month > .meta {
+	font-size: 40%;
+	-webkit-transform-origin: bottom left;
+	-webkit-transition: 1s;
+}
+
+.tweets-in-month:hover > .meta {
+	-webkit-transform: scale(1.5) translateX(2em);
+}
+
+.tweets-in-month:hover > h4 {
+	-webkit-transform: rotate(-5deg) scaleX(1.2) translateX(-2%);
+}
+
+.tweets-on-day {
+	position: relative;
+}
+
+.tweets-on-day > h4 {
+	margin: 0;
+	opacity: .1;
+	position: absolute;
+	right: 0;
+	-webkit-transform: rotate(90deg) translateX(100%);
+	-webkit-transform-origin: top right;
+	-webkit-mask-image: -webkit-gradient(linear, 
+		left top, right top, 
+		from(rgba(0,0,0,1)), to(rgba(0,0,0,0)));
+	-webkit-transition: 1s;
+}
+
+.tweets-on-day > h4 .meta {
+	opacity: 0;
+	text-align: right;
+	-webkit-transition: 1s;
+}
+
+.tweets-on-day:hover {
+	background-color: #fff9ff;
+}
+
+.tweets-on-day:hover > h4 {
+	opacity: .2;
+	-webkit-transform: rotate(60deg) translateX(100%);
+	-webkit-mask-image: none;
+}
+
+.tweets-on-day:hover > h4 .meta {
+	opacity: 1;
+}
+
+.tweet {
+	border: 1px solid rgba(0, 0, 0, .1);
+	background: rgba(0, 0, 0, .02);
+	padding: .2em;
+	margin-bottom: .5em;
+	margin-right: 2em;
+}
+
+	.tweet.from-archive {
+		border-left: 2px solid red;
+	}
+
+	.tweet:hover {
+		background: rgba(0, 0, 0, .04);
+		-webkit-transition: 1s;
+	}
+
+	.tweet:hover .meta {
+		opacity: .8;
+		-webkit-transition: 1s;
+	}
+
+	.tweet .meta {
+		opacity: .4;
+		margin: .2em 1em .2em 1em;
+		text-align: right;
+		font-size: 60%;
+	}
+
+	.tweet .meta div {
+		display: inline;
+		margin-left: .5em;
+	}
+
+.controls {
+	position: fixed;
+	top: -1px;
+	right: -1px;
+	padding: 1em;
+	background: rgba(255, 255, 255, .9);
+	border: 1px solid rgba(0, 0, 0, .1);
+}

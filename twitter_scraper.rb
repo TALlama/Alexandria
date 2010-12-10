@@ -1,24 +1,21 @@
-#!/usr/bin/ruby
-
 require 'tmpdir'
 require 'date'
 require 'fileutils'
-require 'ftools'
 require 'net/http'
 
-loaded_find_so_far = true
+loaded_fine_so_far = true
 ['rubygems', 'hpricot', 'active_support'].each do |lib|
 	begin
 		require lib
 	rescue LoadError => err
-		STDERR.puts "Could not find a required dependency; try the following to install:" if loaded_find_so_far
+		STDERR.puts "Could not find a required dependency; try the following to install:" if loaded_fine_so_far
 		STDERR.puts "$ sudo gem install #{lib}"
 		
-		loaded_find_so_far = false
+		loaded_fine_so_far = false
 	end
 end
 
-exit(1) if !loaded_find_so_far
+exit(1) if !loaded_fine_so_far
 
 DELETE_ARCHIVE_BEFORE = false
 DELETE_INDEX_CACHE_AFTER = true
@@ -37,10 +34,10 @@ module Athena
 	class Tweet
 		attr_accessor :user_name
 		attr_accessor :id
-		attr_accessor :content
-		attr_accessor :timestamp
+		attr_accessor :source
+		attr_accessor :created_at
 		attr_accessor :client_name, :client_url
-		attr_accessor :in_reply_to_name, :in_reply_to_url
+		attr_accessor :in_reply_to_screen_name, :in_reply_to_url
 		
 		def self.parse_all_from_page(page)
 			tweets = []
@@ -66,14 +63,14 @@ module Athena
 			############# A normal tweet
 			#<li class="hentry u-TALlama status" id="status_4993369766">
 			#	 <span class="status-body">
-			#		 <span class="entry-content">The Superfreakonomics guys are really, 
+			#		 <span class="entry-source">The Superfreakonomics guys are really, 
 			#			 really wrong about global warming, and here's why: 
 			#			 <a href="http://bit.ly/1M05fo" class="tweet-url web" rel="nofollow" target="_blank">http://bit.ly/1M05fo</a>
 			#		 </span>
 			#		 <span class="meta entry-meta">
 			#			 <a href="http://twitter.com/TALlama/status/4993369766" class="entry-date" rel="bookmark">
 			#				 <span data="{time:'Mon Oct 19 15:30:29 +0000 2009'}" 
-			#					 class="published timestamp">8:30 AM Oct 19th</span>
+			#					 class="published created_at">8:30 AM Oct 19th</span>
 			#			 </a>
 			#			 <span>from <a href="http://bit.ly" rel="nofollow">bit.ly</a></span>
 			#		 </span>
@@ -83,12 +80,12 @@ module Athena
 			############## A reply
 			#<li class="hentry u-TALlama status" id="status_5034174917">
 			#	 <span class="status-body">
-			#		 <span class="entry-content">@<a class="tweet-url username" href="/lemmo">lemmo</a> 
+			#		 <span class="entry-source">@<a class="tweet-url username" href="/lemmo">lemmo</a> 
 			#			 that was awesome.
 			#		 </span>
 			#		 <span class="meta entry-meta">
 			#			 <a href="http://twitter.com/TALlama/status/5034174917" class="entry-date" rel="bookmark">
-			#				 <span class="published timestamp" data="{time:'Wed Oct 21 02:18:54 +0000 2009'}"
+			#				 <span class="published created_at" data="{time:'Wed Oct 21 02:18:54 +0000 2009'}"
 			#					 >7:18 PM Oct 20th</span>
 			#			 </a>
 			#			 <span>from <a href="http://twitterrific.com" rel="nofollow">Twitterrific</a></span>
@@ -101,10 +98,10 @@ module Athena
 			
 			t.user_name = d['class'].split.collect {|c| c[/^u-(.+)$/, 1]}.compact.first
 			t.id = d['id'].split('_').last.to_i
-			t.content = d.at('.entry-content').html
+			t.source = d.at('.entry-source').html
 			
-			timestamp_span = d.at('.timestamp')
-			t.timestamp = DateTime.parse(ActiveSupport::JSON.decode(timestamp_span['data'])['time'])
+			created_at_span = d.at('.created_at')
+			t.created_at = DateTime.parse(ActiveSupport::JSON.decode(created_at_span['data'])['time'])
 			
 			meta = d.at('.entry-meta')
 			
@@ -122,7 +119,7 @@ module Athena
 				a.html =~ /in reply to/
 			end.first
 			if in_reply_to_link
-				t.in_reply_to_name = in_reply_to_link.html.split.last
+				t.in_reply_to_screen_name = in_reply_to_link.html.split.last
 				t.in_reply_to_url = in_reply_to_link['href']
 			end
 			
@@ -134,8 +131,8 @@ module Athena
 		def self.archive(to_file, tweets, options={})
 			options = {
 				:group_by => Proc.new do |tweet|
-					format = options[:group_by_time_format] || '%B ‘%y'
-					tweet.timestamp.strftime(format)
+					format = options[:group_by_time_format] || "%B '%y"
+					DateTime.parse(tweet.created_at).strftime(format)
 				end
 			}.merge(options)
 			
@@ -144,9 +141,9 @@ module Athena
 			if options[:filter]
 				filter = options[:filter]
 				
-				filter = Proc.new {|t| t.content =~ options[:filter]} if filter.is_a? Regexp
+				filter = Proc.new {|t| t.source =~ options[:filter]} if filter.is_a? Regexp
 				
-				tweets = tweets.select &filter if filter.is_a? Proc
+				tweets = tweets.select(&filter) if filter.is_a? Proc
 			end
 			
 			tmp_file = to_file.gsub(/\./, '.tmp.')
@@ -154,7 +151,7 @@ module Athena
 				f.puts %{<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">}
 				f.puts %{<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">}
 				f.puts %{ <head><title>#{options[:title] || "Twitter Archive"}</title>}
-				f.puts %{		<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />}
+				f.puts %{		<meta source="text/html; charset=utf-8" http-equiv="source-Type" />}
 				f.puts %[
 					<style type='text/css'>
 						#timeline {
@@ -221,7 +218,7 @@ module Athena
 				f.puts "		<div id='timeline'>"
 				f.puts "			<ol>"
 				
-				sections = tweets.group_by &options[:group_by]
+				sections = tweets.group_by(&options[:group_by])
 				sections.each_pair do |section, tweets_in_section|
 					f.puts "				<li>"
 					if section
@@ -240,7 +237,7 @@ module Athena
 			end
 			
 			File.delete(to_file) if File.exist?(to_file)
-			File.move(tmp_file, to_file)
+			#FIXME File.move(tmp_file, to_file)
 			
 			to_file
 		end
@@ -249,8 +246,8 @@ module Athena
 			"http://twitter.com/#{user_name}/status/#{id}"
 		end
 		
-		def local_timestamp
-			self.timestamp.new_offset(DateTime.now.offset)
+		def local_created_at
+			self.created_at.new_offset(DateTime.now.offset)
 		end
 		
 		def reply?
@@ -259,15 +256,15 @@ module Athena
 		
 		def to_s
 			reply_html = reply? ? %{
-				<a href='#{in_reply_to_url}' class='in-reply-to'>in reply to #{in_reply_to_name}</a>
+				<a href='#{in_reply_to_url}' class='in-reply-to'>in reply to #{in_reply_to_screen_name}</a>
 			} : ''
 			
 			%{
 				<li class='status' id='status_#{id}'>
-					<span class='entry-content'>#{content}</span>
+					<span class='entry-source'>#{source}</span>
 					<span class='entry-meta'>
 						<a href='#{url}' class='entry-date' rel='bookmark'><span 
-							data="{time: '#{timestamp}'}" class='timestamp published'>#{local_timestamp.strftime('%X on %x')}</span></a>
+							data="{time: '#{created_at}'}" class='created_at published'>#{local_created_at.strftime('%X on %x')}</span></a>
 						<span class='entry-client'>from <a href='#{client_url}'>#{client_name}</a></span>
 						#{reply_html}
 					</span>
@@ -292,7 +289,7 @@ module Athena
 			@reply_counts_by_name = Hash.new(0)
 			
 			tweets.each do |tweet|
-				date = Date.parse(tweet.timestamp.to_s)
+				date = Date.parse(tweet.created_at.to_s)
 				@count_by_date[date] = @count_by_date[date] + 1
 				
 				client = tweet.client_name
@@ -300,7 +297,7 @@ module Athena
 				@client_urls_by_name[client] = tweet.client_url
 				
 				if tweet.reply?
-					@reply_counts_by_name[tweet.in_reply_to_name] = @reply_counts_by_name[tweet.in_reply_to_name] + 1
+					@reply_counts_by_name[tweet.in_reply_to_screen_name] = @reply_counts_by_name[tweet.in_reply_to_screen_name] + 1
 				end
 			end
 		end
@@ -331,7 +328,7 @@ module Athena
 			end
 			ordered_counts.sort!
 			ordered_counts.reverse!
-			average = total / ordered_counts.length
+			average = total / ordered_counts.length rescue 0
 			
 			last_x_sections_total = 0
 			last_x_sections.each do |section|
@@ -395,7 +392,7 @@ module Athena
 				:item_to_section => Proc.new do |date| 
 					Date.new(date.year, date.month, 1)
 				end,
-				:section_formatter => Proc.new {|date| date.strftime('%B ‘%y') },
+				:section_formatter => Proc.new {|date| date.strftime("%B '%y") },
 				:section_html_formatter => Proc.new do |defaultHtml, raw_section, section, count, data|
 					today = Date.today
 					this_month = Date.new(today.year, today.month, 1)
@@ -452,6 +449,8 @@ module Athena
 		
 		def self.clear_index_cache_dir(user)
 			dir = self.index_cache_dir(user)
+			return if !File.exists?(dir)
+			
 			Dir.foreach(dir) do |f| 
 				File.delete(File.join(dir, f)) unless f == '.' or f == '..'
 			end
@@ -489,31 +488,31 @@ module Athena
 		def get(options={})
 			out = options[:out] || STDOUT
 			
-			return @page_contents if @page_contents
+			return @page_sources if @page_sources
 			
 			if File.exists? index_cache_file
 				out.puts "		(pulling from cache at #{index_cache_file})"
 				self.from_cache = true
-				return @page_contents = File.read(index_cache_file)
+				return @page_sources = File.read(index_cache_file)
 			elsif VERBOSE
 				out.puts "		downloading #{url}"
 				out.puts "		saving to #{index_cache_file}"
 			end
 			
-			@page_contents = ""
+			@page_sources = ""
 			
 			res = Net::HTTP.start(url.host, url.port) {|http|
 				http.get(url.path + "?page=#{index}")
 			}
 			
 			if res.is_a? Net::HTTPSuccess
-				@page_contents = res.body
-				File.open(index_cache_file, "w+") { |io| io << @page_contents }
+				@page_sources = res.body
+				File.open(index_cache_file, "w+") { |io| io << @page_sources }
 			else
 				raise Exception, "Error getting page #{index}: #{res.message} [#{res.code}]"
 			end
 
-			@page_contents
+			@page_sources
 		end
 		
 		def tweets
@@ -540,41 +539,41 @@ module Athena
 			@cache_dir
 		end
 		
-		def get_tweets_from_web(options = {})
-			page_range = options[:page_range]
+		def get_tweets_from_api(options = {})
+			require 'twitter'
+			
+			page_range = options[:page_range] || 0..1
 			out = options[:out] || STDOUT
 			err = options[:err] || STDERR
 			
-			page_index = page_range ? page_range.first : 1
-			page_index = 1 if page_index < 1
+			page_index = page_range ? page_range.first : 0
+			page_index = 0 if page_index < 0
 			
 			page_range_desc = page_range ? "pages #{page_range.inspect}" : "all pages"
-			out.puts "Getting #{page_range_desc} of #{name}'s tweets…"
+			out.puts "Getting #{page_range_desc} of #{name}'s tweets..."
 			
 			loop do
 				out.puts "	Getting page #{page_index}"
-				page = TimelinePage.new(self, page_index)
 				
 				begin
-					page.get(options)
-					add_tweets(page.tweets) or return
-					out.puts "		got #{page.tweets.size} tweets"
+					tweets = Twitter.user_timeline(name, :count => 200, :page => page_index)
+					add_tweets(tweets) or return
+					out.puts "		got #{tweets.size} tweets"
 					page_index = page_index.succ
 					
-					break if page.tweets.empty?
+					break if tweets.empty?
 					break if page_range and page_index >= page_range.last
 					
-					sleep 1 unless page.from_cache?
+					sleep 1
 				rescue Exception => e
 					err.puts "", "Got an error getting page #{page_index}: #{e.message}"
-					page.delete_index_cache_file
 					exit(1)
 				end
 			end
 		end
 		
 		def archive_file
-			"#{name}-tweet-archive.html"
+			"#{name}Tweets.html"
 		end
 		
 		def delete_archive_file
@@ -607,7 +606,7 @@ module Athena
 		
 		def get_tweets(options={})
 			get_tweets_from_archive(options)
-			get_tweets_from_web(options)
+			get_tweets_from_api(options)
 		end
 		
 		def add_tweets(tweets)
@@ -636,10 +635,10 @@ if $0 == __FILE__
 	username=$1 || 'TALlama'
 	user = Athena::User.new(username)
 	file = user.archive_tweets(
-		#:group_by => Proc.new {|tweet| tweet.timestamp.strftime('%x')},
-		#:group_by => Proc.new {|tweet| tweet.content.length},
+		#:group_by => Proc.new {|tweet| tweet.created_at.strftime('%x')},
+		#:group_by => Proc.new {|tweet| tweet.source.length},
 		#:group_by_time_format => '%x',
-		#:filter => Proc.new {|tweet| tweet.content =~ /MikaylaRoby/}
+		#:filter => Proc.new {|tweet| tweet.source =~ /MikaylaRoby/}
 		#:filter => /MikaylaRoby/
 	)
 	puts "Got #{user.tweets.length} tweets"
