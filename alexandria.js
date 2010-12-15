@@ -116,9 +116,7 @@ jQuery.extend(Date.prototype, {
 			//  "favorited":false,"source":"<a href=\"http://twitterrific.com\" rel=\"nofollow\">Twitterrific</a>",
 			//  "in_reply_to_status_id_str":"8020197273239552","id_str":"8023212889739265","contributors":null,
 			//  "coordinates":null,"in_reply_to_screen_name":"JssSandals","in_reply_to_user_id_str":"15693316",
-			//  "entities":{"urls":[],"hashtags":[],"user_mentions":[{"indices":[0,11],"id_str":"15693316",
-			//  "name":"Ben, Leader of Men","screen_name":"JssSandals"}]},"place":null,"user":{"id_str":"10588782"},
-			//  "retweet_count":null,"retweeted":false,
+			//  "place":null,"user":{"id_str":"10588782"}, "retweet_count":null,"retweeted":false,
 			//  "text":"@JssSandals but tomorrow's family feast exists in a time warp where it is still Thanksgiving, so no Christmas music there."}
 			var $this = this;
 			var tweetDiv = $("<div class='tweet'/>").attr('id', tweet.id_str);
@@ -130,26 +128,7 @@ jQuery.extend(Date.prototype, {
 			tweet.created_at_str = tweet.created_at;
 			tweet.created_at = new Date(tweet.created_at_str);
 			
-			var text = tweet.text;
-			if (tweet.entitiesxxx) {
-				//TODO: fix cases with multiple entities
-				$.each(tweet.entities.urls, function(ix, mention) {
-					text = addEntity(text, mention, function(url) {
-						return "<a href='" + url + "'>" + url + "</a>";
-					});
-				});
-				$.each(tweet.entities.hashtags, function(ix, mention) {
-					text = addEntity(text, mention, function(tag) {
-						return "<a href='" + tagUrl(tag) + "'>" + tag + "</a>";
-					});
-				});
-				$.each(tweet.entities.user_mentions, function(ix, mention) {
-					text = addEntity(text, mention, function(screenName) {
-						return "<a href='" + userUrl(screenName) + "'>" + screenName + "</a>";
-					});
-				});
-			}
-			contentDiv.append(text);
+			contentDiv.append(tweet.text);
 			
 			if (tweet.truncated) tweetDiv.append('…');
 			if (tweet.favorited) tweetDiv.addClass('favorite');

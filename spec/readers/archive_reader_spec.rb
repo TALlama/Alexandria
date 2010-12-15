@@ -9,7 +9,7 @@ describe Alexandria::ArchiveReader do
 	
 	before :each do
 		@silent = Alexandria::HierarchalOutput.new(DEVNULL, DEVNULL)
-		@reader = Alexandria::ArchiveReader.new(:out => @silent)
+		@reader = Alexandria::ArchiveReader.new(:user => "ExampleGuy", :out => @silent)
 		
 		Twitter.stub!(:user).and_return do |screen_name|
 			Hashie::Mash.new(:screen_name => screen_name)
@@ -50,6 +50,15 @@ describe Alexandria::ArchiveReader do
 				</span>
 			</li>
 		})
+	end
+	
+	it "knows the file to read from" do
+		@reader.filename.should == "ExampleGuy-tweet-archive.html"
+	end
+
+	it "can override file to read from" do
+		@reader.opts[:archive_file] = "MyArchive.html"
+		@reader.filename.should == "MyArchive.html"
 	end
 	
 	it "can be parsed from 2009-style output" do
@@ -97,12 +106,20 @@ describe Alexandria::ArchiveReader do
 		proc {parse_tweet_that_lacks_timestamp}.should raise_error(/no timestamp/i)
 	end
 	
-	it "can parse a whole file" do
-		html = File.read(spec_input_file('example-page.html'))
+	it "can grab tweets from a whole file" do
+		@reader.opts[:archive_file] = spec_input_file('example-page.html')
 		
-		tweets = @reader.tweets_from_html(html)
+		tweets = @reader.all_tweets
 		tweets.count.should == 20
 		tweets.select {|t| t.id_str == 8031966028}.should_not == nil
+	end
+	
+	it "can yield tweets from a whole file" do
+		@reader.opts[:archive_file] = spec_input_file('example-page.html')
+		
+		count = 0
+		@reader.each_tweet {|t| count = count + 1}
+		count.should == 20
 	end
 	
 	it "logs errors to its output" do

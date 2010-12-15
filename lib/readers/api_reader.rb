@@ -17,9 +17,7 @@ module Alexandria
 		end
 		
 		def get_tweet(id_str)
-			mash = Twitter.status(id_str, 
-				:trim_user => true,
-				:include_entities => true)
+			mash = Twitter.status(id_str, :trim_user => true)
 			sleep api_delay
 			clean_tweet(mash)
 		rescue
@@ -61,8 +59,7 @@ module Alexandria
 							call_opts = {
 								:count => options[:count] || DEFAULT_PAGE_COUNT, 
 								:page => page_index,
-								:trim_user => true,
-								:include_entities => true
+								:trim_user => true
 							}
 							call_opts[:since_id] = options[:since_id] if options[:since_id]
 							call_opts[:max_id] = options[:max_id] if options[:max_id]

@@ -123,7 +123,6 @@ unless defined? DEVNULL
 				 "favorited":false,"source":"<a href=\\"http://twitterrific.com\\" rel=\\"nofollow\\">Twitterrific</a>",
 				 "in_reply_to_status_id_str":null,"id_str":"7899947810693120","contributors":null,"coordinates":null,
 				 "in_reply_to_screen_name":null,"in_reply_to_user_id_str":null,
-				 "entities":{"urls":[],"hashtags":[{"indices":[58,101],"text":"omigodyoudonthaverockswingsgogetitrightnow"}],"user_mentions":[]},
 				 "place":null,"user":{"id_str":"10588782"},
 				 "retweet_count":null,"retweeted":false,
 				 "text":"How is it that Paul Anka hasn't done a Rock Swings 2 yet? #omigodyoudonthaverockswingsgogetitrightnow"}
@@ -132,9 +131,7 @@ unless defined? DEVNULL
 				 "favorited":false,"source":"<a href=\\"http://twitterrific.com\\" rel=\\"nofollow\\">Twitterrific</a>",
 				 "in_reply_to_status_id_str":"8020197273239552","id_str":"8023212889739265","contributors":null,
 				 "coordinates":null,"in_reply_to_screen_name":"JssSandals","in_reply_to_user_id_str":"15693316",
-				 "entities":{"urls":[],"hashtags":[],"user_mentions":[{"indices":[0,11],"id_str":"15693316",
-				 "name":"Ben, Leader of Men","screen_name":"JssSandals"}]},"place":null,"user":{"id_str":"10588782"},
-				 "retweet_count":null,"retweeted":false,
+				 "place":null,"user":{"id_str":"10588782"},"retweet_count":null,"retweeted":false,
 				 "text":"@JssSandals but tomorrow's family feast exists in a time warp where it is still Thanksgiving, so no Christmas music there."}
 			]}).collect {|h| Hashie::Mash.new(h)}
 			@tweet = @tweets[0]

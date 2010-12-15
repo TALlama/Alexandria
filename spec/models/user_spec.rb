@@ -38,4 +38,11 @@ describe Alexandria::User do
 		@user.should_not == nil
 		@user.screen_name.should == "TALlama"
 	end
+	
+	it "displays as the screen name" do
+		Twitter.stub!(:user).and_throw(:should_not_hit_the_api)
+
+		@user = Alexandria::User.new(:screen_name => "TALlama")
+		@user.to_s.should == @user.screen_name
+	end
 end

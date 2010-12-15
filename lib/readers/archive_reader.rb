@@ -13,18 +13,25 @@ module Alexandria
 			self.opts = opts
 		end
 		
-		def filename(user)
+		def user
+			opts[:user]
+		end
+		
+		def filename
 			@opts[:archive_file] || "#{user}-tweet-archive.html"
 		end
 		
-		def each_tweet(options={})
-			file = filename(options[:user])
-			return unless File.exists?(file)
+		def each_tweet(options={}, &block)
+			return unless File.exists?(filename)
 			
-			html = File.read(file)
+			html = File.read(filename)
 			return unless html.include?("xhtml1-strict.dtd")
 			
-			tweets_from_html(html) {|tweet| yield tweet}
+			tweets_from_html(html, &block)
+		end
+		
+		def all_tweets(options={})
+			each_tweet(options)
 		end
 		
 		def tweets_from_html(html)
@@ -71,7 +78,6 @@ module Alexandria
 			#  "favorited":false,"source":"<a href=\"http://twitterrific.com\" rel=\"nofollow\">Twitterrific</a>",
 			#  "in_reply_to_status_id_str":null,"id_str":"7899947810693120","contributors":null,"coordinates":null,
 			#  "in_reply_to_screen_name":null,"in_reply_to_user_id_str":null,
-			#  "entities":{"urls":[],"hashtags":[{"indices":[58,101],"text":"omigodyoudonthaverockswingsgogetitrightnow"}],"user_mentions":[]},
 			#  "place":null,"user":{"id_str":"10588782"},
 			#  "retweet_count":null,"retweeted":false,
 			#  "text":"How is it that Paul Anka hasn't done a Rock Swings 2 yet? #omigodyoudonthaverockswingsgogetitrightnow"}
@@ -80,9 +86,7 @@ module Alexandria
 			#  "favorited":false,"source":"<a href=\"http://twitterrific.com\" rel=\"nofollow\">Twitterrific</a>",
 			#  "in_reply_to_status_id_str":"8020197273239552","id_str":"8023212889739265","contributors":null,
 			#  "coordinates":null,"in_reply_to_screen_name":"JssSandals","in_reply_to_user_id_str":"15693316",
-			#  "entities":{"urls":[],"hashtags":[],"user_mentions":[{"indices":[0,11],"id_str":"15693316",
-			#  "name":"Ben, Leader of Men","screen_name":"JssSandals"}]},"place":null,"user":{"id_str":"10588782"},
-			#  "retweet_count":null,"retweeted":false,
+			#  "place":null,"user":{"id_str":"10588782"},"retweet_count":null,"retweeted":false,
 			#  "text":"@JssSandals but tomorrow's family feast exists in a time warp where it is still Thanksgiving, so no Christmas music there."}
 			id_str = li["id"][/status_(\d+)/, 1]
 			if id_str
@@ -105,11 +109,7 @@ module Alexandria
 				
 				# but we can't get this from the html we saved before
 				:truncated => false, :geo => nil, :favorited => false,
-				:contributors => nil, :coordinates => nil,
-				:entities => {
-					:urls => [], :hashtags => [], :user_mentions => []
-				},
-				:place => nil,
+				:contributors => nil, :coordinates => nil, :place => nil,
 				
 				# we could get this, but we probably don't need to
 				:in_reply_to_user_id_str => nil,

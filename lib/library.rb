@@ -16,10 +16,6 @@ module Alexandria
 			self.opts = opts
 		end
 		
-		def filename
-			"#{user}.tweetlib.html"
-		end
-		
 		def reader
 			source_list = opts[:sources]
 			source_list = [:lib, :archive, :api] if source_list.nil? or source_list.empty?

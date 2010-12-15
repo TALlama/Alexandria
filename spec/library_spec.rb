@@ -27,11 +27,63 @@ describe Alexandria::Library do
 			@r.should be_an_instance_of(klass)
 		end
 	end
+	
+	it "complains if told to pull from a source it doesn't know" do
+		@lib.opts[:sources] = [:not_a_real_source]
+		proc { @r = @lib.reader }.should raise_error(
+			/unknown source/i
+		)
+	end
 
 	it "has a writer to write out tweets" do
 		@w = @lib.writer
 		@w.should_not == nil
 		@w.should respond_to(:write)
+	end
+
+	it "outputs to a lib by default" do
+		@w = @lib.writer
+		@w.should_not == nil
+		
+		while @w.respond_to? :wrapped
+			@w = @w.wrapped
+		end
+		
+		@w.should be_a(Alexandria::LibraryWriter)
+	end
+	
+	{:lib => Alexandria::LibraryWriter,
+		:json => Alexandria::JsonWriter}.each_pair do |destination, klass|
+		it "outputs to a #{destination} if told to" do
+			@lib.opts[:dests] = [destination]
+			@w = @lib.writer
+			@w.should_not == nil
+		
+			while @w.respond_to? :wrapped
+				@w = @w.wrapped
+			end
+		
+			@w.should be_a(klass)
+		end
+	end
+	
+	it "outputs to multiple locations if needed" do
+		@lib.opts[:dests] = [:lib, :json]
+		@w = @lib.writer
+		@w.should_not == nil
+		
+		while @w.respond_to? :wrapped
+			@w = @w.wrapped
+		end
+		
+		@w.should be_a(Alexandria::TweetWriterAggregator)
+	end
+	
+	it "complains if told to push to a destination it doesn't know" do
+		@lib.opts[:dests] = [:not_a_real_destintion]
+		proc { @r = @lib.writer }.should raise_error(
+			/unknown destination/i
+		)
 	end
 
 	it "logs incoming tweet counts by default" do

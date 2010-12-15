@@ -11,9 +11,14 @@ module Alexandria
 		def initialize(*args)
 			self.opts = {:out => HierarchalOutput.new}
 			
+			parse(*args)
+		end
+		
+		def parse(*args)
 			cmd = args.first || "help"
+			methods = public_methods(false).collect {|m| m.to_sym}
 			
-			if public_methods.include? cmd.to_sym
+			if methods.include? cmd.to_sym
 				send_args = [cmd, args[1..args.length]].flatten
 				send *send_args
 			else
@@ -40,7 +45,7 @@ module Alexandria
 			stream.puts "			--opt <optname> <optvalue>"
 			stream.puts "				pass <optname>=<optvalue> to all readers and writers."
 			stream.puts ""
-			exit args.last.to_i rescue exit 0
+			exit args.last.to_i if args.last.is_a?(Numeric)
 		end
 		
 		def update(*option_list)
@@ -52,15 +57,16 @@ module Alexandria
 			# parse out the options for updating
 			options = {
 				:sources => [],
-				:dests => []
+				:dests => [],
+				:out => opts[:out]
 			}
 			until option_list.empty? do
 				opt = option_list.shift
 				case opt
 				when "--source" then
-					options[:sources] << option_list.shift
+					options[:sources] << option_list.shift.to_sym
 				when "--dest" then
-					options[:dests] << option_list.shift
+					options[:dests] << option_list.shift.to_sym
 				when "--opt" then
 					options[option_list.shift.to_sym] = option_list.shift
 				else
