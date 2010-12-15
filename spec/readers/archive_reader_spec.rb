@@ -102,7 +102,7 @@ describe Alexandria::ArchiveReader do
 		
 		tweets = @reader.tweets_from_html(html)
 		tweets.count.should == 20
-		tweets.select {|t| t.id == 8031966028}.should_not == nil
+		tweets.select {|t| t.id_str == 8031966028}.should_not == nil
 	end
 	
 	it "logs errors to its output" do

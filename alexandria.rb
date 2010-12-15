@@ -1,5 +1,9 @@
 #!/usr/bin/env ruby
 
+if RUBY_VERSION < "1.9"
+	$KCODE = "u"
+end
+
 require 'rubygems'
 require 'twitter'
 require 'nokogiri'

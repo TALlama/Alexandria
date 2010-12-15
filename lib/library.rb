@@ -60,12 +60,16 @@ module Alexandria
 				end
 			end
 			
-			if dests.length == 1
+			actual_writer = if dests.length == 1
 				dests.pop
 			else
 				dests << opts
 				TweetWriterAggregator.new(*dests)
 			end
+			
+			actual_writer = UniqueWriter.new(actual_writer) unless opts[:avoid_duplicates] == false
+			actual_writer = LoggingWriter.new(actual_writer, hierarchal_output, opts[:log_every] || 50) unless opts[:log_every] == 0
+			actual_writer
 		end
 		
 		def update

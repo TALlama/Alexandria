@@ -1,3 +1,5 @@
+require 'rubygems'
+require 'rspec'
 require File.join(File.dirname(File.dirname(__FILE__)), 'alexandria.rb')
 
 unless defined? DEVNULL

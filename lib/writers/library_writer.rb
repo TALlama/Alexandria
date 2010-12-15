@@ -9,7 +9,7 @@ module Alexandria
 	
 		def write(&block)
 			open
-			while t = yield(self); end
+			yield(self)
 		ensure
 			close
 		end
@@ -18,8 +18,6 @@ module Alexandria
 	
 		def initialize(opts={})
 			self.opts = opts
-		
-			@archived_tweet_ids = {}
 		end
 		
 		def user
@@ -27,7 +25,7 @@ module Alexandria
 		end
 	
 		def filename
-			@opts[:lib_file] || "#{user}.tweetlib.html"
+			@opts[:out_lib_file] || @opts[:lib_file] || "#{user}.tweetlib.html"
 		end
 
 		def temp_filename
@@ -46,19 +44,8 @@ module Alexandria
 			@io << "      tweets = [\n"
 		end
 	
-		def has_tweet?(tweet_id_str)
-			@archived_tweet_ids[t.id_str]
-		end
-	
 		def <<(t)
-			return if @archived_tweet_ids[t.id_str]
-		
-			@archived_tweet_ids[t.id_str] = true
 			@io << "        #{t.to_json},\n"
-		
-			if (@archived_tweet_ids.length % 50) == 0
-				puts "Got #{@archived_tweet_ids.length} tweets"
-			end
 		end
 	
 		def close

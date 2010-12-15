@@ -1,24 +1,10 @@
 require 'env.rb'
+require File.expand_path('writer_helpers.rb', File.dirname(__FILE__))
 
 describe Alexandria::TweetWriterAggregator do
-	class Counter
-		attr_accessor :write_started, :write_ended, :count
-		
-		def write
-			self.write_started = true
-			self.count = 0
-			yield self
-			self.write_ended = true
-		end
-		
-		def <<(t)
-			self.count = self.count + 1
-		end
-	end
-	
 	before :each do
-		@cap1 = Counter.new
-		@cap2 = Counter.new
+		@cap1 = CountingWriter.new
+		@cap2 = CountingWriter.new
 		@agg = Alexandria::TweetWriterAggregator.new(@cap1, @cap2)
 	end
 	

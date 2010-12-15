@@ -34,8 +34,34 @@ describe Alexandria::Library do
 		@w.should respond_to(:write)
 	end
 
+	it "logs incoming tweet counts by default" do
+		@lib.opts.merge!(
+			:dests => [:lib],
+			:avoid_duplicates => false
+		)
+		@w = @lib.writer
+		@w.should_not == nil
+		@w.should be_a(Alexandria::LoggingWriter)
+		@w.wrapped.should be_a(Alexandria::LibraryWriter)
+	end
+	
+	it "avoids writing duplicates by default" do
+		@lib.opts.merge!(
+			:dests => [:lib],
+			:log_every => 0
+		)
+		@w = @lib.writer
+		@w.should_not == nil
+		@w.should be_a(Alexandria::UniqueWriter)
+		@w.wrapped.should be_a(Alexandria::LibraryWriter)
+	end
+
 	it "will only write to the tweetlib when told to do so" do
-		@lib.opts[:dests] = [:lib]
+		@lib.opts.merge!(
+			:dests => [:lib],
+			:log_every => 0,
+			:avoid_duplicates => false
+		)
 		@w = @lib.writer
 		@w.should_not == nil
 		@w.should be_a(Alexandria::LibraryWriter)
