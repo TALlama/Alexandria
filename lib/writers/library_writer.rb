@@ -1,17 +1,11 @@
 module Alexandria
 	# Write tweets out to a tweetlib.html file
 	class LibraryWriter
+		include TweetWriter
 		include HierarchalOutputUser
 	
 		def self.write(opts={}, &block)
 			LibraryWriter.new(opts).write(&block)
-		end
-	
-		def write(&block)
-			open
-			yield(self)
-		ensure
-			close
 		end
 	
 		attr_accessor :opts

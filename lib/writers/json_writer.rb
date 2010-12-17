@@ -1,6 +1,9 @@
+require File.expand_path('tweet_writer.rb', File.dirname(__FILE__))
+
 module Alexandria
 	# write tweets out as a JSON array
 	class JsonWriter
+		include TweetWriter
 		include HierarchalOutputUser
 		
 		attr_accessor :opts

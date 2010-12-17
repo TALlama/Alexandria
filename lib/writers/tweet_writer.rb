@@ -2,9 +2,19 @@ module Alexandria
 	# The public interface for all TweetWriters
 	module TweetWriter
 		def write(&block)
-			# setup
-			yield "io that implements <<"
-			# cleanup
+			open
+			yield(self)
+		ensure
+			close
+		end
+		
+		def open; end
+		def close; end
+	end
+	
+	module TweetConsumer
+		def <<(tweet)
+			# write out the tweet in an appropriate way
 		end
 	end
 	

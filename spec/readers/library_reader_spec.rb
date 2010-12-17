@@ -11,9 +11,7 @@ describe Alexandria::LibraryReader do
 		}
 		
 		example_tweets
-		@writer = Alexandria::LibraryWriter.new(opts)
-		File.delete(@writer.filename) rescue nil
-		@writer.write do |io|
+		Alexandria::LibraryWriter.write(opts) do |io|
 			io << @tweet
 			io << @reply
 		end
@@ -32,6 +30,20 @@ describe Alexandria::LibraryReader do
 			/provide a user/)
 	end
 	
+	it "knows where to pull tweets from" do
+		@reader.filename.should == "library_reader.tweetlib.html"
+	end
+
+	it "can override where to pull tweets from" do
+		@reader.opts[:lib_file] = "My.tweetlib.html"
+		@reader.filename.should == "My.tweetlib.html"
+	end
+
+	it "can override where to pull tweets from without changing the destination" do
+		@reader.opts[:in_lib_file] = "My.tweetlib.html"
+		@reader.filename.should == "My.tweetlib.html"
+	end
+	
 	it "pulls in tweets" do
 		Twitter.stub!(:user).and_return(Hashie::Mash.new(:id_str => "10588782"))
 		
@@ -40,7 +52,7 @@ describe Alexandria::LibraryReader do
 	end
 	
 	it "doesn't care if the library isn't there to pull from" do
-		File.delete(@writer.filename) rescue nil
+		File.delete(@reader.filename) rescue nil
 		
 		tweets = @reader.all_tweets
 		tweets.count.should == 0

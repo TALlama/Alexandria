@@ -60,6 +60,11 @@ describe Alexandria::ArchiveReader do
 		@reader.opts[:archive_file] = "MyArchive.html"
 		@reader.filename.should == "MyArchive.html"
 	end
+
+	it "can override file to read from without changing file to write to" do
+		@reader.opts[:in_archive_file] = "MyArchive.html"
+		@reader.filename.should == "MyArchive.html"
+	end
 	
 	it "can be parsed from 2009-style output" do
 		@tweet.user_name.should == "TALlama"

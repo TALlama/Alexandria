@@ -18,7 +18,7 @@ module Alexandria
 		end
 		
 		def filename
-			@opts[:archive_file] || "#{user}-tweet-archive.html"
+			@opts[:in_archive_file] || @opts[:archive_file] || "#{user}-tweet-archive.html"
 		end
 		
 		def each_tweet(options={}, &block)

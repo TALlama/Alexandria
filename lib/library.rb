@@ -17,6 +17,8 @@ module Alexandria
 		end
 		
 		def reader
+			return @reader if @reader
+			
 			source_list = opts[:sources]
 			source_list = [:lib, :archive, :api] if source_list.nil? or source_list.empty?
 			
@@ -33,7 +35,7 @@ module Alexandria
 				end
 			end
 			
-			if sources.length == 1
+			@reader = if sources.length == 1
 				sources.pop
 			else
 				sources << opts
@@ -42,6 +44,8 @@ module Alexandria
 		end
 		
 		def writer
+			return @writer if @writer
+			
 			dest_list = opts[:dests] || opts[:destinations]
 			dest_list = [:lib] if dest_list.nil? or dest_list.empty?
 			
@@ -65,7 +69,23 @@ module Alexandria
 			
 			actual_writer = UniqueWriter.new(actual_writer) unless opts[:avoid_duplicates] == false
 			actual_writer = LoggingWriter.new(actual_writer, hierarchal_output, opts[:log_every] || 50) unless opts[:log_every] == 0
-			actual_writer
+			@writer = actual_writer
+		end
+		
+		def writer_of_type(type)
+			w = writer
+			while w and !w.is_a?(type)
+				w = w.wrapped
+			end
+			w
+		end
+		
+		def hit_duplicates?
+			writer_of_type(UniqueWriter).hit_duplicates?
+		end
+
+		def out_filename
+			writer_of_type(LibraryWriter).filename rescue nil
 		end
 		
 		def update
@@ -75,7 +95,13 @@ module Alexandria
 			r, w = reader, writer
 			
 			w.write do |io|
-				r.each_tweet(opts) {|t| io << t}
+				r.each_tweet(opts) do |t|
+					io << t
+					if hit_duplicates?
+						w.puts "Duplicate tweet; done reading."
+						break
+					end
+				end
 			end
 		end
 	end

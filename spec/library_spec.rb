@@ -130,4 +130,30 @@ describe Alexandria::Library do
 	
 		@lib.update
 	end
+
+	it "will stop pulling from the API when it hits tweets already pulled from the lib" do
+		# write out a library containing the tweet
+		Alexandria::LibraryWriter.write(@lib.opts.merge({
+			:lib_file => spec_input_file('example.tweetlib.html')
+		})) do |io|
+			io << @tweet
+		end
+		
+		# first get the reply, then the tweet, then die if there's a third pull
+		responses = [:if_this_is_pulled_we_die, @tweets[0..0], @tweets[1..1]]
+		Twitter.stub!(:user_timeline).and_return { responses.pop }
+		Twitter.stub!(:user).and_return(Alexandria::User.new(
+			:id_str => "10588782", 
+			:screen_name => "TALlama"))
+
+		@lib.opts[:sources] = [:lib, :api]
+		@lib.opts[:in_lib_file] = spec_input_file('example.tweetlib.html')
+
+		File.delete(@lib.out_filename) rescue nil
+		@lib.update
+		
+		output = File.read(@lib.out_filename)
+		output.should match(@tweet.id_str)
+		output.should match(@reply.id_str)
+	end
 end

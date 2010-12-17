@@ -65,10 +65,10 @@ module Alexandria
 							call_opts[:max_id] = options[:max_id] if options[:max_id]
 							tweets = Twitter.user_timeline("#{user}", call_opts)
 							if tweets.empty?
-								puts "got no tweets; ending fetch"
+								puts "No tweets; ending fetch"
 								found_tweets = false
 							else
-								puts "got #{tweets.size} tweets"
+								puts "#{tweets.size} tweets"
 								tweets.each do |t|
 									yield clean_tweet(t)
 								end

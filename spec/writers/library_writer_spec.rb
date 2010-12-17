@@ -18,8 +18,13 @@ describe Alexandria::LibraryWriter do
 	it "knows where to stash in-progress writing" do
 		@w.temp_filename.should == "ExampleGuy.tweetlib.inprogress.html"
 	end
+
+	it "can override where to write" do
+		@w.opts[:lib_file] = "My.tweetlib.html"
+		@w.filename.should == "My.tweetlib.html"
+	end
 	
-	it "knows where to write when that path is specified uniquely" do
+	it "can override where to write without changing where to read from" do
 		@w.opts[:out_lib_file] = "My.tweetlib.html"
 		@w.filename.should == "My.tweetlib.html"
 	end

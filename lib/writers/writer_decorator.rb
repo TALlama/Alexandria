@@ -5,7 +5,11 @@ module Alexandria
 		def initialize(wrapped)
 			self.wrapped = wrapped
 		end
-
+		
+		def opts
+			wrapped.respond_to?(:opts) ? wrapped.opts : {}
+		end
+		
 		def write
 			wrapped.write do |io|
 				io_wrapper = IOWrapper.new
@@ -32,40 +36,49 @@ module Alexandria
 	end
 	
 	class UniqueWriter < WriterDecorator
+		include HierarchalOutputUser
+		
+		attr_reader :duplicated_keys
+		
 		def initialize(wrapped, key=:id_str)
 			super(wrapped)
 			
 			@key = key
 			@written_tweets_by_key = {}
+			@duplicated_keys = []
 		end
 		
 		def decorate(t)
 			key = t.send(@key)
 			if @written_tweets_by_key[key]
+				@duplicated_keys << key
 				nil
 			else
 				@written_tweets_by_key[key] = true
 				t
 			end
 		end
+		
+		def hit_duplicates?
+			!duplicated_keys.empty?
+		end
 	end
 	
 	class LoggingWriter < WriterDecorator
 		include HierarchalOutputUser
 		
-		attr_accessor :hierarchal_output
-		
 		def initialize(wrapped, hierarchal_output, log_every=nil)
 			super(wrapped)
 			
-			self.hierarchal_output = hierarchal_output
 			@log_every = log_every || 50
 			@seen = 0
 		end
 		
 		def decorate(t)
-			if (@seen % 50) == 0
-				puts "Got #{@seen} tweets."
+			@seen = @seen + 1
+			
+			if (@seen % @log_every) == 0
+				puts "Total tweets: #{@seen}"
 			end
 			
 			t

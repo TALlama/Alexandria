@@ -29,4 +29,13 @@ describe Alexandria::UniqueWriter do
 		
 		@w.wrapped.count.should == 1
 	end
+	
+	it "will tell you if a tweet has been duplicated" do
+		@w.write do |io|
+			io << Alexandria::Tweet.new(:id_str => "123")
+			io << Alexandria::Tweet.new(:id_str => "123")
+		end
+		
+		@w.duplicated_keys.should include("123")
+	end
 end

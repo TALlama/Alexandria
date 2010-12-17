@@ -15,12 +15,15 @@ module Alexandria
 		end
 		
 		def filename
-			@opts[:lib_file] || "#{user}.tweetlib.html"
+			@opts[:in_lib_file] || @opts[:lib_file] || "#{user}.tweetlib.html"
 		end
 		
 		def each_tweet(options={})
 			raise ArgumentException.new("Must provide a user") unless user
-			return unless File.exists?(filename)
+			unless File.exists?(filename)
+				puts "Skipping library file; was not at #{filename}"
+				return
+			end
 			
 			api_reader = ApiReader.new(opts)
 			
