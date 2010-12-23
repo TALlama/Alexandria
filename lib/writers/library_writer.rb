@@ -34,6 +34,14 @@ module Alexandria
 			@io << "<html>\n"
 			@io << "  <head><title>#{user} Twitter Library</title>\n"
 			@io << "    <link rel='stylesheet' href='alexandria.css' />\n"
+			%w{
+				https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.js
+				alexandria.js
+			}.each {|s| @io << "    <script src='#{s}'> </script>\n"}
+			@io << "    <script>\n"
+			@io << "      users = {};\n"
+			@io << "      jQuery.extend(users, #{opts[:user_cache].to_json})\n"
+			@io << "    </script>\n"
 			@io << "    <script>\n"
 			@io << "      tweets = [\n"
 		end
@@ -46,12 +54,8 @@ module Alexandria
 			@io << "      ]\n"
 			@io << "    </script>\n"
 			@io << "    <script>\n"
-			@io << "      users = #{opts[:user_cache].to_json}\n"
+			@io << "      jQuery.extend(users, #{opts[:user_cache].to_json})\n"
 			@io << "    </script>\n"
-			%w{
-				https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.js
-				alexandria.js
-			}.each {|s| @io << "    <script src='#{s}'> </script>\n"}
 			@io << "  </head>\n"
 			@io << "  <body></body>\n"
 			@io << "</html>\n"
@@ -62,6 +66,12 @@ module Alexandria
 			FileUtils.rm(temp_filename)
 		rescue
 			eputs "Failed to write the tweetlib: #{$!.message}"
+		end
+		
+		def close_due_to_error(error)
+			@io.close
+			FileUtils.rm(temp_filename)
+			eputs "Failed to write the tweetlib: #{error.message}"
 		end
 	end
 end

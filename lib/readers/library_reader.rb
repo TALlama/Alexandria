@@ -3,6 +3,7 @@ module Alexandria
 	class LibraryReader
 		include TweetReader
 		include HierarchalOutputUser
+		include UserCacheUser
 		
 		attr_accessor :opts, :user
 		
@@ -27,15 +28,26 @@ module Alexandria
 			
 			api_reader = ApiReader.new(opts)
 			
-			found_tweet_list = false
-			ended_tweet_list = false
+			in_users_object = false
+			in_tweet_list = false
 			
 			f = File.open(filename, "r") 
 			f.each_line do |line|
-				ended_tweet_list = line.strip == "]"
-				break if ended_tweet_list
+				break if in_tweet_list and line.strip == "]"
 				
-				if found_tweet_list
+				if in_users_object
+					if line.strip == "})"
+						in_users_object = false
+						next
+					end
+					
+					json = line.strip.sub(/,$/, '')
+					user_cache.load_users_from_json('{' + json + '}')
+				else
+					in_users_object = line.strip == "jQuery.extend(users, {"
+				end
+				
+				if in_tweet_list
 					begin
 						json = line.strip.sub(/,$/, '')
 						hash = JSON::parse(json)
@@ -48,7 +60,7 @@ module Alexandria
 						raise pe
 					end
 				else
-					found_tweet_list = line.strip == "tweets = ["
+					in_tweet_list = line.strip == "tweets = ["
 				end
 			end
 		end

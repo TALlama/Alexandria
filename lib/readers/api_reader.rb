@@ -49,6 +49,7 @@ module Alexandria
 				found_tweets = true
 				
 				page_range.each do |page_index|
+					break if opts[:hit_duplicate]
 					break unless found_tweets
 					next if page_index < 0
 					
@@ -69,8 +70,8 @@ module Alexandria
 								found_tweets = false
 							else
 								puts "#{tweets.size} tweets"
-								tweets.each do |t|
-									yield clean_tweet(t)
+								tweets.sort_by(&:id_str).reverse.each do |t|
+									yield clean_tweet(t) unless t.id_str == options[:max_id]
 								end
 								options[:max_id] = tweets.last.id_str
 							end

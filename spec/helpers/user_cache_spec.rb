@@ -89,4 +89,22 @@ describe Alexandria::UserCache do
 		json.should include(user.to_json) #should include the found users
 		JSON::parse(json) # should be valid JSON
 	end
+	
+	it "fails if no API access is allowed it" do
+		@uc.opts[:no_api] = true
+		proc {@uc.by_screen_name("ExampleGuy")}.should raise_error(
+			Exception,
+			/no api access allowed/i)
+	end
+	
+	it "can load users from a JSON file" do
+		@uc.load_users_from_file(spec_input_file("users.json"))
+		@uc.by_id_str("10588782").id_str.should == "10588782"
+	end
+
+	it "can load users from a JSON string" do
+		json = File.read(spec_input_file("users.json"))
+		@uc.load_users_from_json(json)
+		@uc.by_id_str("10588782").id_str.should == "10588782"
+	end
 end

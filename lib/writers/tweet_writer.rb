@@ -4,12 +4,14 @@ module Alexandria
 		def write(&block)
 			open
 			yield(self)
-		ensure
 			close
+		rescue => e
+			close_due_to_error(e)
 		end
 		
 		def open; end
 		def close; end
+		def close_due_to_error(error); end
 	end
 	
 	module TweetConsumer

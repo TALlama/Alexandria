@@ -89,7 +89,7 @@ module Alexandria
 			#  "place":null,"user":{"id_str":"10588782"},"retweet_count":null,"retweeted":false,
 			#  "text":"@JssSandals but tomorrow's family feast exists in a time warp where it is still Thanksgiving, so no Christmas music there."}
 			id_str = li["id"][/status_(\d+)/, 1]
-			if id_str
+			if id_str and Boolean(opts[:no_api]) != false
 				@api_reader ||= ApiReader.new(opts)
 				tweet = @api_reader.get_tweet(id_str)
 				return tweet if tweet

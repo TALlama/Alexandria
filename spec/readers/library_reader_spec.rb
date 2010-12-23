@@ -8,7 +8,10 @@ describe Alexandria::LibraryReader do
 		opts = {
 			:user => File.basename(__FILE__, '_spec.rb'),
 			:out => Alexandria::HierarchalOutput.new(DEVNULL, DEVNULL),
+			:user_cache => Alexandria::UserCache.new,
 		}
+		
+		opts[:user_cache].load_users_from_file(spec_input_file('users.json'))
 		
 		example_tweets
 		Alexandria::LibraryWriter.write(opts) do |io|
@@ -45,8 +48,6 @@ describe Alexandria::LibraryReader do
 	end
 	
 	it "pulls in tweets" do
-		Twitter.stub!(:user).and_return(Hashie::Mash.new(:id_str => "10588782"))
-		
 		tweets = @reader.all_tweets
 		tweets.count.should == 2
 	end
@@ -71,5 +72,11 @@ describe Alexandria::LibraryReader do
 			@reader.hierarchal_output,
 			/Error parsing tweet from JSON/i
 		)
+	end
+
+	it "adds any users it knows about to the user cache" do
+		@reader.opts[:in_lib_file] = spec_input_file('example.tweetlib.html')
+		tweets = @reader.all_tweets
+		@reader.user_cache.by_id_str("10588782").should_not be_nil
 	end
 end

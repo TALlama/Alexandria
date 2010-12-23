@@ -11,18 +11,27 @@ module Alexandria
 		end
 		
 		def write
+			will_start_write
 			wrapped.write do |io|
+				did_start_write(io)
 				io_wrapper = IOWrapper.new
 				io_wrapper.writer_decorator = self
 				io_wrapper.wrapped_io = io
 				
 				yield(io_wrapper)
+				will_finish_write(io)
 			end
+			did_finish_write
 		end
 		
 		def decorate(t)
 			t
 		end
+		
+		def will_start_write; end
+		def did_start_write(io); end
+		def will_finish_write(io); end
+		def did_finish_write; end
 		
 		class IOWrapper
 			attr_accessor :writer_decorator, :wrapped_io
@@ -52,6 +61,7 @@ module Alexandria
 			key = t.send(@key)
 			if @written_tweets_by_key[key]
 				@duplicated_keys << key
+				opts[:hit_duplicates] = true
 				nil
 			else
 				@written_tweets_by_key[key] = true
@@ -70,7 +80,7 @@ module Alexandria
 		def initialize(wrapped, hierarchal_output, log_every=nil)
 			super(wrapped)
 			
-			@log_every = log_every || 50
+			@log_every = log_every || 100
 			@seen = 0
 		end
 		
@@ -82,6 +92,10 @@ module Alexandria
 			end
 			
 			t
+		end
+		
+		def did_finish_write
+			puts "Final tweet count: #{@seen}"
 		end
 	end
 end

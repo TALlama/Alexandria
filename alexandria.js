@@ -107,6 +107,7 @@ jQuery.extend(Date.prototype, {
 				var str = count + " tweet" + (count == 1 ? '' : "s");
 				dayDiv.find('h4 .meta').text(str);
 			});
+			return $this;
 		},
 		formatTweetUrl: function(user_screen_name, id_str) {
 			return tweetUrl(user_screen_name, id_str);
@@ -212,11 +213,12 @@ jQuery.extend(Date.prototype, {
 			}
 			
 			var $this = $(this);
-			$.each($this.tweetlib.getTweets(), function(ix, tweet) {
+			$.each($this.tweetlib('getTweets'), function(ix, tweet) {
 				if (predicate(tweet)) {
 					tweet.div.show();
 				} else tweet.div.hide();
 			});
+			return $this;
 		}
 	};
 

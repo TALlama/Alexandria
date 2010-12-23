@@ -83,6 +83,10 @@ module Alexandria
 		def hit_duplicates?
 			writer_of_type(UniqueWriter).hit_duplicates?
 		end
+		
+		def duplicated_keys
+			writer_of_type(UniqueWriter).duplicated_keys
+		end
 
 		def out_filename
 			writer_of_type(LibraryWriter).filename rescue nil
@@ -90,17 +94,18 @@ module Alexandria
 		
 		def update
 			opts[:user] = user
-			opts[:user_cache] = UserCache.new
+			opts[:user_cache] = UserCache.new(opts)
 			
 			r, w = reader, writer
 			
 			w.write do |io|
 				r.each_tweet(opts) do |t|
 					io << t
-					if hit_duplicates?
-						w.puts "Duplicate tweet; done reading."
-						break
-					end
+				end	
+				
+				if hit_duplicates?
+					w.puts "Duplicate tweet; done reading."
+					w.puts "  Duplicated tweet IDs: #{duplicated_keys.join(', ')}"
 				end
 			end
 		end
