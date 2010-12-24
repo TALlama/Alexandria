@@ -105,7 +105,6 @@ module Alexandria
 				
 				if hit_duplicates?
 					w.puts "Duplicate tweet; done reading."
-					w.puts "  Duplicated tweet IDs: #{duplicated_keys.join(', ')}"
 				end
 			end
 		end

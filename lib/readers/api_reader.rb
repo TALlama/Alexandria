@@ -59,7 +59,6 @@ module Alexandria
 						indented do
 							call_opts = {
 								:count => options[:count] || DEFAULT_PAGE_COUNT, 
-								:page => page_index,
 								:trim_user => true
 							}
 							call_opts[:since_id] = options[:since_id] if options[:since_id]

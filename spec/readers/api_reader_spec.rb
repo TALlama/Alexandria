@@ -35,13 +35,13 @@ describe Alexandria::ApiReader do
 		tweets.count.should == 2
 	end
 
-	it "fetches the pages it's told to" do
+	it "fetches the tweet range it's told to" do
 		Twitter.stub!(:user_timeline).and_return do |user, opts|
-			opts[:page].should == 17
+			opts[:max_id].should == 17
 			[]
 		end
 
-		tweets = @reader.all_tweets(:user => "example", :page_range => 17..23)
+		tweets = @reader.all_tweets(:user => "example", :max_id => 17)
 	end
 
 	it "keeps track of what tweets to ask for" do

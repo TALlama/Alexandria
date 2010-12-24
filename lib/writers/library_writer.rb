@@ -65,13 +65,14 @@ module Alexandria
 			FileUtils.cp(temp_filename, filename)
 			FileUtils.rm(temp_filename)
 		rescue
-			eputs "Failed to write the tweetlib: #{$!.message}"
+			close_due_to_error($!)
 		end
 		
 		def close_due_to_error(error)
-			@io.close
-			FileUtils.rm(temp_filename)
 			eputs "Failed to write the tweetlib: #{error.message}"
+			eputs *error.backtrace
+			@io.close rescue nil
+			FileUtils.rm(temp_filename) rescue nil
 		end
 	end
 end

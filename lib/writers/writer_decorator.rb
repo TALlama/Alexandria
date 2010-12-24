@@ -61,7 +61,7 @@ module Alexandria
 			key = t.send(@key)
 			if @written_tweets_by_key[key]
 				@duplicated_keys << key
-				opts[:hit_duplicates] = true
+				opts[:hit_duplicate] = true
 				nil
 			else
 				@written_tweets_by_key[key] = true
