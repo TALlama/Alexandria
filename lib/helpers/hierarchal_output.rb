@@ -48,6 +48,10 @@ module Alexandria
 			hierarchal_output.eputs *args
 		end
 		
+		def dputs(*args)
+			puts(*args) if opts[:debug]
+		end
+		
 		def indented(*args, &block)
 			hierarchal_output.indented(*args, &block)
 		end

@@ -83,6 +83,15 @@ describe Alexandria::CLI do
 			end
 			@cli.parse *%w{update ExampleGuy --opt key value}
 		end
+
+		it "can ask for tweets to be refetched from the API" do
+			Alexandria::Library.stub!(:new).and_return do |user, opts|
+				opts[:refetch_from_api].should == true
+
+				mock_library
+			end
+			@cli.parse *%w{update ExampleGuy --refetch}
+		end
 		
 		it "fails if given bad options" do
 			proc {

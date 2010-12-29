@@ -69,6 +69,8 @@ module Alexandria
 					options[:dests] << option_list.shift.to_sym
 				when "--opt" then
 					options[option_list.shift.to_sym] = option_list.shift
+				when "--refetch" then
+					options[:refetch_from_api] = true
 				else
 					fail "Unknown update option: #{opt}", :bad_arg
 				end

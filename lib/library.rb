@@ -38,6 +38,12 @@ module Alexandria
 				end
 			end
 			
+			if opts[:refetch_from_api]
+				sources = sources.collect do |source|
+					source.is_a?(ApiReader) ? source : RefetchingReader.new(opts, source)
+				end
+			end
+			
 			@reader = if sources.length == 1
 				sources.pop
 			else

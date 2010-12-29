@@ -35,6 +35,13 @@ describe Alexandria::Library do
 		@r.should_not == nil
 		@r.readers.any? {|r| r.is_a? Alexandria::ArchiveReader }.should == true
 	end
+	
+	it "can refetch tweets from the API that it gets from files" do
+		@lib.opts[:refetch_from_api] = "true"
+		@r = @lib.reader
+		@r.should_not == nil
+		@r.readers.any? {|r| r.is_a? Alexandria::RefetchingReader }.should == true
+	end
 
 	{:lib => Alexandria::LibraryReader,
 		:archive => Alexandria::ArchiveReader,

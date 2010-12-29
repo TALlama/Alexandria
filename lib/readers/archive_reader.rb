@@ -88,18 +88,10 @@ module Alexandria
 			#  "coordinates":null,"in_reply_to_screen_name":"JssSandals","in_reply_to_user_id_str":"15693316",
 			#  "place":null,"user":{"id_str":"10588782"},"retweet_count":null,"retweeted":false,
 			#  "text":"@JssSandals but tomorrow's family feast exists in a time warp where it is still Thanksgiving, so no Christmas music there."}
-			id_str = li["id"][/status_(\d+)/, 1]
-			if id_str and Boolean(opts[:no_api]) != false
-				@api_reader ||= ApiReader.new(opts)
-				tweet = @api_reader.get_tweet(id_str)
-				return tweet if tweet
-			end
-			
-			
 			tweet = Hashie::Mash.new({
 				# we can get this stuff
 				:created_at => created_at_from_li(li).to_s,
-				:id_str => id_str,
+				:id_str => li["id"][/status_(\d+)/, 1],
 				:text => li.at_css("span.entry-content").inner_html,
 				:in_reply_to_screen_name => li.to_s[/in reply to (\w+)/, 1],
 				:in_reply_to_status_id_str => li.to_s[/status\/(\d+)">in reply to/, 1],
