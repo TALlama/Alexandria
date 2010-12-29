@@ -17,6 +17,25 @@ describe Alexandria::Library do
 		@r.should be_an_instance_of(Alexandria::TweetReaderAggregator)
 	end
 
+	it "reads from the library if one exists" do
+		@r = @lib.reader
+		@r.should_not == nil
+		@r.readers.any? {|r| r.is_a? Alexandria::LibraryReader }.should == true
+	end
+	
+	it "does not read from the archive if a library exists" do
+		@r = @lib.reader
+		@r.should_not == nil
+		@r.readers.any? {|r| r.is_a? Alexandria::ArchiveReader }.should == false
+	end
+
+	it "reads from the archive if a library does not exist" do
+		@lib.opts[:lib_file] = "file/that/does/not/exist.html"
+		@r = @lib.reader
+		@r.should_not == nil
+		@r.readers.any? {|r| r.is_a? Alexandria::ArchiveReader }.should == true
+	end
+
 	{:lib => Alexandria::LibraryReader,
 		:archive => Alexandria::ArchiveReader,
 		:api => Alexandria::ApiReader}.each_pair do |source, klass|

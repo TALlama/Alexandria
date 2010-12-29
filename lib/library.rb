@@ -20,7 +20,10 @@ module Alexandria
 			return @reader if @reader
 			
 			source_list = opts[:sources]
-			source_list = [:lib, :archive, :api] if source_list.nil? or source_list.empty?
+			if source_list.nil? or source_list.empty?
+				file_reader = File.exists?(LibraryReader.new(opts).filename) ? :lib : :archive
+				source_list = [file_reader, :api]
+			end
 			
 			sources = source_list.collect do |source|
 				case source.to_sym
