@@ -1,7 +1,9 @@
 module Alexandria
 	# The interface for all tweet-readers in Alexandria
 	module TweetReader
-		def each_tweet(options={}); end
+		def each_tweet(options={}, &block)
+			all_tweets.each(&block)
+		end
 		
 		def all_tweets(options={})
 			arr = []

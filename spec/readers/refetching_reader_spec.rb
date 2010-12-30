@@ -6,9 +6,6 @@ describe Alexandria::RefetchingReader do
 	before :each do
 		example_tweets
 		
-		@wrapped_r = [@tweet, @reply]
-		def @wrapped_r.each_tweet(opts, &block); each(&block) end
-		
 		@fetcher = {:hit_for => [], :hit_count => 0}
 		def @fetcher.get_tweet(id_str)
 			self[:hit_for] << id_str
@@ -17,7 +14,7 @@ describe Alexandria::RefetchingReader do
 		end
 		
 		@r = Alexandria::RefetchingReader.new
-		@r.wrapped = @wrapped_r
+		@r.wrapped = Alexandria::TweetArrayReader.new(@tweets)
 		@r.tweet_fetcher = @fetcher
 	end
 	
