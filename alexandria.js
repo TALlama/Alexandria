@@ -141,7 +141,7 @@ jQuery.extend(Date.prototype, {
 			permalink.append(tweet.created_at.toString());
 			metaDiv.append(permalink);
 			
-			if (!('entities' in tweet)) tweetDiv.addClass('from-archive');
+			if (!('autolinked' in tweet)) tweetDiv.addClass('from-archive');
 			
 			//TODO: add geo
 			//TODO: add coordinates

@@ -17,17 +17,20 @@ module Alexandria
 		end
 		
 		def get_tweet(id_str)
+			return nil if @rate_limit_exceeded #don't piss off the folks at Twitter
+			
 			mash = Twitter.status(id_str, :trim_user => true)
 			sleep api_delay
 			clean_tweet(mash)
-		rescue
+		rescue => e
+			@rate_limit_exceeded ||= e.is_a?(Twitter::BadRequest) and e.message =~ /rate limit exceeded/i
 			nil
 		end
 		
 		def clean_tweet(mash)
 			tweet = Tweet.new(mash)
-			tweet.plain_text = tweet.text
-			tweet.text = auto_link(tweet.text) unless tweet.autolinked
+			tweet.plain_text ||= tweet.text unless tweet.autolinked
+			tweet.text = auto_link(tweet.plain_text) unless tweet.autolinked
 			tweet.autolinked = true
 			tweet.created_at = DateTime.parse(tweet.created_at).to_s
 			user_by_id_str(tweet.user.id_str)

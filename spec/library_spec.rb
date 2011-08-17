@@ -50,7 +50,7 @@ describe Alexandria::Library do
 			@lib.opts[:sources] = [source]
 			@r = @lib.reader
 			@r.should_not == nil
-			@r.should be_an_instance_of(klass)
+			@r.readers.any? {|r| r.is_a? klass }
 		end
 	end
 	

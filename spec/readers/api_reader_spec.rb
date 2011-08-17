@@ -66,4 +66,13 @@ describe Alexandria::ApiReader do
 			/error getting page/i
 		)
 	end
+	
+	it "auto links hashtags" do
+		mash = Hashie::Mash.new(JSON::parse(%{{"coordinates":null,"favorited":false,"created_at":"2009-09-21T18:33:06+00:00","truncated":false,"id_str":"4152265699","in_reply_to_user_id_str":null,"source_url":"http://bit.ly","source_name":"bit.ly","url":"http://twitter.com/TALlama/status/4152265699","contributors":null,"text":"#hcr Nikki White would have been far better off if only she had been a convicted bank robber. http://bit.ly/3eZanN","in_reply_to_status_id_str":null,"geo":null,"user_name":"TALlama","user":{"id_str":"10588782"},"in_reply_to_screen_name":null,"place":null}}))
+		text_before = mash.text
+		tweet = @reader.clean_tweet(mash)
+		
+		tweet.plain_text.should == text_before
+		tweet.text.should == "<a href=\"http://twitter.com/search?q=%23hcr\" title=\"#hcr\" class=\"tweet-url hashtag\" rel=\"nofollow\">#hcr</a> Nikki White would have been far better off if only she had been a convicted bank robber. <a href=\"http://bit.ly/3eZanN\" rel=\"nofollow\">http://bit.ly/3eZanN</a>"
+	end
 end

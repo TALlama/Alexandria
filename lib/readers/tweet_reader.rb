@@ -12,6 +12,33 @@ module Alexandria
 		end
 	end
 	
+	class TweetReaderDecorator
+		include TweetReader
+		
+		attr_accessor :wrapped, :opts
+		
+		def initialize(*args)
+			self.opts = args.pop if args.last.respond_to?(:each_pair)
+			self.wrapped = args.pop if args.last
+		end
+		
+		def each_tweet(opts={})
+			wrapped.each_tweet(opts) do |t|
+				yield decorate(t)
+			end
+		end
+		
+		def all_tweets(opts={})
+			wrapped.all_tweets(opts).collect do |t|
+				decorate(t)
+			end
+		end
+		
+		def decorate(t)
+			t
+		end
+	end
+	
 	# if you want to read from multiple successive sources, aggregate them
 	class TweetReaderAggregator
 		include TweetReader
