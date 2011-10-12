@@ -1,3 +1,5 @@
+require 'date'
+
 module Alexandria
 	# pull tweets directly out of Twitter's public API
 	class ApiReader

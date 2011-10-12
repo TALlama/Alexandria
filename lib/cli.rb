@@ -1,6 +1,8 @@
 require File.expand_path('../helpers/hierarchal_output', __FILE__)
 require File.expand_path('../library', __FILE__)
 
+require 'hashie'
+
 module Alexandria
 	class CLI
 		ERROR_CODES = {
