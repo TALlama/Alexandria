@@ -5,3 +5,5 @@ backup-*.html
 spec_input
 spec_output
 coverage
+by-index/
+*-tweet-archive*.html

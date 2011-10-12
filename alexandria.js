@@ -235,7 +235,7 @@ jQuery.extend(Date.prototype, {
 })(jQuery);
 
 $(document).ready(function() {
-	if (!document.location.href.match(/include=all/)) {
+	if (document.location.href.match(/subset/)) {
 		tweets = [
 			tweets[0],
 			tweets[100],
