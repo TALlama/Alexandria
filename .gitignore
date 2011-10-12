@@ -2,7 +2,6 @@ backup-*.html
 *-tweet-archive copy.html
 *.tweetlib.html
 *.tweetlib.*.html
-spec_input
 spec_output
 coverage
 by-index/
